@@ -1,6 +1,6 @@
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.*;
 
 public class LobbyController {
 
@@ -49,4 +49,16 @@ public class LobbyController {
         });
         countdownTimer.start();
     }
+
+    // ตัวอย่างแนวคิดฟังก์ชันจัดการเมื่อมีคนออกห้อง
+        public void handlePlayerLeave(int remainingPlayers, int maxPlayers) {
+         // 1. ถ้า Timer นับถอยหลังค้างอยู่ ให้หยุดทันทีเพราะคนไม่ครบแล้ว
+        if (countdownTimer != null && countdownTimer.isRunning()) {
+            countdownTimer.stop();
+             lobbyUI.getLblCountdown().setText("Player left! Waiting...");
+        }
+    
+            // 2. อัปเดตสถานะจำนวนคนใหม่
+             updatePlayerStatus(remainingPlayers, maxPlayers);
+        }
 }
