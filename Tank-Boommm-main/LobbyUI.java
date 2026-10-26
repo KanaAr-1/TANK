@@ -6,6 +6,7 @@ import javax.swing.*;
 public class LobbyUI extends JFrame {
 
     private int selectedTankIndex = 0; // Index รถถังที่เราเลือก (0 ถึง 5)
+    private int maxPlayers = 4;
 
     // ข้อมูลผู้เล่น 4 ช่อง (สล็อตแรกเป็นของเรา สล็อตอื่นว่างไว้รอเพื่อนจอย)
     private String[] playerNames = {null, null, null, null};
@@ -28,7 +29,8 @@ public class LobbyUI extends JFrame {
         {290, 309}, {492, 309}
     };
 
-    public LobbyUI() {
+    public LobbyUI(int maxPlayers) {
+        this.maxPlayers = maxPlayers;
         setTitle("Tank Boommm - Lobby");
         setSize(800, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -48,7 +50,7 @@ public class LobbyUI extends JFrame {
         // 1. Status ด้านบน
         lblStatus = new JLabel("Status: Waiting for players...", SwingConstants.CENTER);
         lblStatus.setFont(new Font("Monospaced", Font.BOLD, 15));
-        lblStatus.setForeground(new Color(255, 220, 100));
+        lblStatus.setForeground(Color.BLACK);
         lblStatus.setBounds(295, 122, 382, 28);
         mainPanel.add(lblStatus);
 
@@ -87,7 +89,7 @@ public class LobbyUI extends JFrame {
 
             playerNameLabels[i] = new JLabel("", SwingConstants.CENTER);
             playerNameLabels[i].setFont(new Font("Monospaced", Font.BOLD, 13));
-            playerNameLabels[i].setForeground(new Color(255, 235, 150));
+            playerNameLabels[i].setForeground(Color.BLACK);
             playerNameLabels[i].setBounds(x + 12, y + 70, 162, 22);
 
             mainPanel.add(playerTankLabels[i]);
@@ -110,7 +112,7 @@ public class LobbyUI extends JFrame {
         // 5. Countdown ด้านล่าง
         lblCountdown = new JLabel("Waiting...", SwingConstants.CENTER);
         lblCountdown.setFont(new Font("Monospaced", Font.BOLD, 15));
-        lblCountdown.setForeground(new Color(255, 220, 100));
+        lblCountdown.setForeground(Color.BLACK);
         lblCountdown.setBounds(452, 425, 220, 40);
         mainPanel.add(lblCountdown);
 
@@ -147,12 +149,19 @@ public class LobbyUI extends JFrame {
 
     private void refreshDisplay() {
         for (int i = 0; i < 4; i++) {
-            if (playerNames[i] != null) {
-                playerTankLabels[i].setIcon(loadIcon("image/Tank" + playerTanks[i] + ".png", 55, 55));
-                playerNameLabels[i].setText(playerNames[i]);
-            } else {
+            if (i >= maxPlayers) {
                 playerTankLabels[i].setIcon(null);
-                playerNameLabels[i].setText("Waiting...");
+                playerNameLabels[i].setText("[ N/A ]");
+                playerNameLabels[i].setForeground(Color.RED);
+            } else {
+                playerNameLabels[i].setForeground(Color.BLACK);
+                if (playerNames[i] != null) {
+                    playerTankLabels[i].setIcon(loadIcon("image/Tank" + playerTanks[i] + ".png", 55, 55));
+                    playerNameLabels[i].setText(playerNames[i]);
+                } else {
+                    playerTankLabels[i].setIcon(null);
+                    playerNameLabels[i].setText("Waiting...");
+                }
             }
         }
     }
@@ -196,6 +205,6 @@ public class LobbyUI extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new LobbyUI().setVisible(true));
+        SwingUtilities.invokeLater(() -> new LobbyUI(4).setVisible(true));
     }
 }

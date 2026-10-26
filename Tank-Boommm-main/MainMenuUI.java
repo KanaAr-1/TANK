@@ -43,7 +43,7 @@ public class MainMenuUI extends JFrame {
                 showInputError("Please enter a player name.");
                 return;
             }
-            LobbyUI lobby = new LobbyUI();
+            LobbyUI lobby = new LobbyUI(maxPlayers);
             LobbyController controller = new LobbyController(lobby);
             try {
                 NetworkManager.startServer(LOBBY_PORT, playerName + " (Host)", maxPlayers, snapshot -> {
@@ -72,7 +72,7 @@ public class MainMenuUI extends JFrame {
                 showInputError("Enter both a player name and the host IP address.");
                 return;
             }
-            LobbyUI lobby = new LobbyUI();
+            LobbyUI lobby = new LobbyUI(maxPlayers);
             LobbyController controller = new LobbyController(lobby);
             try {
                 boolean connected = NetworkManager.connectHost(targetIP, LOBBY_PORT, playerName,
@@ -101,10 +101,10 @@ public class MainMenuUI extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int mx = e.getX(), my = e.getY();
-                if (Math.abs(mx - dotX) < 20 && Math.abs(my - dotY3) < 20) {
+                if (Math.abs(mx - dotX) < 28 && Math.abs(my - dotY3) < 28) {
                     maxPlayers = 3;
                     mainPanel.repaint();
-                } else if (Math.abs(mx - dotX) < 20 && Math.abs(my - dotY4) < 20) {
+                } else if (Math.abs(mx - dotX) < 28 && Math.abs(my - dotY4) < 28) {
                     maxPlayers = 4;
                     mainPanel.repaint();
                 }
@@ -164,9 +164,9 @@ public class MainMenuUI extends JFrame {
 
             g.setColor(new Color(45, 40, 30));
             if (maxPlayers == 3) {
-                g.fillOval(dotX - 10, dotY3 - 10, 20, 20);
+                g.fillOval(dotX - 13, dotY3 - 13, 26, 26);
             } else if (maxPlayers == 4) {
-                g.fillOval(dotX - 10, dotY4 - 10, 20, 20);
+                g.fillOval(dotX - 13, dotY4 - 13, 26, 26);
             }
         }
     }
