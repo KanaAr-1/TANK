@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.Consumer;
+import javax.swing.SwingUtilities;
 
 public final class NetworkManager {
     private static final int CONNECT_TIMEOUT_MS = 3000;
@@ -18,13 +19,21 @@ public final class NetworkManager {
     private static DataOutputStream clientOutput;
     private static int localSlot;
     private static Consumer<String> clientErrorHandler;
+    private static Consumer<Integer> countdownHandler;
 
     private NetworkManager() {
     }
 
     public static synchronized void startServer(int port, String hostName, int maxPlayers,
                                                 Consumer<LobbySnapshot> onSnapshot) throws IOException {
+        startServer(port, hostName, maxPlayers, onSnapshot, null);
+    }
+
+    public static synchronized void startServer(int port, String hostName, int maxPlayers,
+                                                Consumer<LobbySnapshot> onSnapshot,
+                                                Consumer<Integer> onCountdown) throws IOException {
         leaveLobby();
+        countdownHandler = onCountdown;
         HostServer newServer = new HostServer(port, hostName, maxPlayers, onSnapshot);
         newServer.start();
         hostServer = newServer;
@@ -34,7 +43,15 @@ public final class NetworkManager {
     public static synchronized boolean connectHost(String ip, int port, String playerName,
                                                    Consumer<LobbySnapshot> onSnapshot,
                                                    Consumer<String> onError) throws IOException {
+        return connectHost(ip, port, playerName, onSnapshot, onError, null);
+    }
+
+    public static synchronized boolean connectHost(String ip, int port, String playerName,
+                                                   Consumer<LobbySnapshot> onSnapshot,
+                                                   Consumer<String> onError,
+                                                   Consumer<Integer> onCountdown) throws IOException {
         leaveLobby();
+        countdownHandler = onCountdown;
 
         Socket socket = new Socket();
         try {
@@ -132,10 +149,26 @@ public final class NetworkManager {
         }
         localSlot = 0;
         clientErrorHandler = null;
+        countdownHandler = null;
     }
 
     public static synchronized int getLocalSlot() {
         return localSlot;
+    }
+
+    public static synchronized boolean isHost() {
+        return hostServer != null;
+    }
+
+    public static synchronized void sendCountdownStart(int seconds) {
+        if (seconds < 0) {
+            seconds = 0;
+        }
+        if (hostServer != null) {
+            hostServer.broadcastCountdown(seconds);
+        } else if (clientOutput != null) {
+            sendClientMessage("COUNTDOWN\t" + seconds);
+        }
     }
 
     private static synchronized void sendClientMessage(String message) {
@@ -159,6 +192,15 @@ public final class NetworkManager {
                 if (message.startsWith("STATE\t")) {
                     if (onSnapshot != null) {
                         onSnapshot.accept(decodeSnapshot(message));
+                    }
+                } else if (message.startsWith("COUNTDOWN\t")) {
+                    try {
+                        int remainingSeconds = Integer.parseInt(message.substring("COUNTDOWN\t".length()));
+                        if (countdownHandler != null) {
+                            SwingUtilities.invokeLater(() -> countdownHandler.accept(remainingSeconds));
+                        }
+                    } catch (NumberFormatException ignored) {
+                        // Ignore malformed countdown updates.
                     }
                 } else if (message.startsWith("ERROR\t")) {
                     reportError(onError, decode(message.substring("ERROR\t".length())));

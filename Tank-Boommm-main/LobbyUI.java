@@ -17,6 +17,7 @@ public class LobbyUI extends JFrame {
     private JLabel lblCountdown;
     private JLabel[] playerTankLabels = new JLabel[4];
     private JLabel[] playerNameLabels = new JLabel[4];
+    private final LobbyController lobbyController;
 
     private final int[][] tankBtnPos = {
         {120, 185}, {204, 186},
@@ -31,6 +32,7 @@ public class LobbyUI extends JFrame {
 
     public LobbyUI(int maxPlayers) {
         this.maxPlayers = maxPlayers;
+        this.lobbyController = new LobbyController(this);
         setTitle("Tank Boommm - Lobby");
         setSize(800, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -98,6 +100,16 @@ public class LobbyUI extends JFrame {
 
         refreshDisplay();
 
+        JButton btnStart = new JButton(loadIcon("image/start_btn.png",200,155));
+        btnStart.setBounds(120, 422, 155,50);
+        styleButton(btnStart);
+        btnStart.addActionListener(e -> {
+            if (NetworkManager.isHost()) {
+                lobbyController.startCountdown(3);
+                NetworkManager.sendCountdownStart(3);
+            }
+        });
+        mainPanel.add(btnStart);
         // 4. ปุ่ม Leave Lobby
         JButton btnLeave = new JButton(loadIcon("image/leave_btn.png", 200, 155));
         btnLeave.setBounds(265, 370, 200, 155);
@@ -168,6 +180,7 @@ public class LobbyUI extends JFrame {
 
     public JLabel getLblStatus() { return lblStatus; }
     public JLabel getLblCountdown() { return lblCountdown; }
+    public LobbyController getLobbyController() { return lobbyController; }
 
     private ImageIcon loadIcon(String path, int w, int h) {
         try {

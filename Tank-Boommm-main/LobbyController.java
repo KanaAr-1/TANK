@@ -10,33 +10,31 @@ public class LobbyController {
     public LobbyController(LobbyUI lobbyUI) {
         this.lobbyUI = lobbyUI;
     }
-    //นาว
+
     public void updatePlayerStatus(int currentPlayers, int maxPlayers) {
         lobbyUI.getLblStatus().setText("Status: Waiting for players (" + currentPlayers + "/" + maxPlayers + ")...");
 
-        if (currentPlayers == maxPlayers) {
-            startCountdown();
-        } else {
-            if (countdownTimer != null && countdownTimer.isRunning()) {
-                countdownTimer.stop();
-            }
-            lobbyUI.getLblCountdown().setText("Waiting...");
-        }
+       
     }
 
-    public void startCountdown() {
-        if (countdownTimer != null && countdownTimer.isRunning()) {
-            return;
+    
+
+    public void startCountdown(int seconds) {
+        if (seconds < 0) {
+            seconds = 0;
         }
 
-        countdownTimer = new Timer(1000, new ActionListener() {
-            int count = 3;
+        if (countdownTimer != null && countdownTimer.isRunning()) {
+            countdownTimer.stop();
+        }
 
+        final int[] count = {seconds};
+        countdownTimer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (count > 0) {
-                    lobbyUI.getLblCountdown().setText("Starting in " + count + "...");
-                    count--;
+                if (count[0] > 0) {
+                    lobbyUI.getLblCountdown().setText("Starting in " + count[0] + "...");
+                    count[0]--;
                 } else {
                     ((Timer) e.getSource()).stop();
                     lobbyUI.getLblCountdown().setText("Game Starting!");
@@ -47,7 +45,13 @@ public class LobbyController {
                 }
             }
         });
+        countdownTimer.setInitialDelay(0);
         countdownTimer.start();
+        if (seconds > 0) {
+            lobbyUI.getLblCountdown().setText("Starting in " + seconds + "...");
+        } else {
+            lobbyUI.getLblCountdown().setText("Game Starting!");
+        }
     }
 
     // ตัวอย่างแนวคิดฟังก์ชันจัดการเมื่อมีคนออกห้อง

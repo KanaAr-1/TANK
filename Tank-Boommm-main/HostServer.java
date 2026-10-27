@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import javax.swing.Timer;
 
 public final class HostServer {
     private final int maxPlayers;
@@ -14,6 +15,7 @@ public final class HostServer {
     private final List<ClientConnection> clients = new ArrayList<>();
     private ServerSocket serverSocket;
     private boolean running;
+    private Timer countdownTimer;
 
     public HostServer(int port, String hostName, int maxPlayers,
                       Consumer<NetworkManager.LobbySnapshot> onSnapshot) {
@@ -168,6 +170,9 @@ public final class HostServer {
             return;
         }
         running = false;
+        if (countdownTimer != null && countdownTimer.isRunning()) {
+            countdownTimer.stop();
+        }
         try {
             if (serverSocket != null) {
                 serverSocket.close();
@@ -213,6 +218,42 @@ public final class HostServer {
             onSnapshot.accept(current);
         }
         String message = NetworkManager.encodeSnapshot(current);
+        for (ClientConnection client : new ArrayList<>(clients)) {
+            try {
+                synchronized (client.output) {
+                    client.output.writeUTF(message);
+                    client.output.flush();
+                }
+            } catch (IOException e) {
+                removeClient(client);
+            }
+        }
+    }
+
+    public synchronized void broadcastCountdown(int totalSeconds) {
+        if (!running) {
+            return;
+        }
+        if (countdownTimer != null && countdownTimer.isRunning()) {
+            countdownTimer.stop();
+        }
+
+        final int[] remaining = {Math.max(0, totalSeconds)};
+        countdownTimer = new Timer(1000, e -> {
+            if (remaining[0] > 0) {
+                sendCountdownToClients(remaining[0]);
+                remaining[0]--;
+            } else {
+                ((Timer) e.getSource()).stop();
+                sendCountdownToClients(0);
+            }
+        });
+        countdownTimer.setInitialDelay(0);
+        countdownTimer.start();
+    }
+
+    private void sendCountdownToClients(int remainingSeconds) {
+        String message = "COUNTDOWN\t" + remainingSeconds;
         for (ClientConnection client : new ArrayList<>(clients)) {
             try {
                 synchronized (client.output) {

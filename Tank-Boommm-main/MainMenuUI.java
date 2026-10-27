@@ -1,8 +1,8 @@
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.InetAddress;
+import javax.swing.*;
 
 public class MainMenuUI extends JFrame {
 
@@ -44,13 +44,14 @@ public class MainMenuUI extends JFrame {
                 return;
             }
             LobbyUI lobby = new LobbyUI(maxPlayers);
-            LobbyController controller = new LobbyController(lobby);
             try {
                 NetworkManager.startServer(LOBBY_PORT, playerName + " (Host)", maxPlayers, snapshot -> {
                     SwingUtilities.invokeLater(() -> {
                         lobby.applySnapshot(snapshot);
-                        controller.updatePlayerStatus(snapshot.getPlayerCount(), snapshot.maxPlayers);
+                        lobby.getLobbyController().updatePlayerStatus(snapshot.getPlayerCount(), snapshot.maxPlayers);
                     });
+                }, remainingSeconds -> {
+                    SwingUtilities.invokeLater(() -> lobby.getLobbyController().startCountdown(remainingSeconds));
                 });
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Could not start the host: " + ex.getMessage(),
@@ -73,15 +74,17 @@ public class MainMenuUI extends JFrame {
                 return;
             }
             LobbyUI lobby = new LobbyUI(maxPlayers);
-            LobbyController controller = new LobbyController(lobby);
             try {
                 boolean connected = NetworkManager.connectHost(targetIP, LOBBY_PORT, playerName,
                         snapshot -> {
                             SwingUtilities.invokeLater(() -> {
                                 lobby.applySnapshot(snapshot);
-                                controller.updatePlayerStatus(snapshot.getPlayerCount(), snapshot.maxPlayers);
+                                lobby.getLobbyController().updatePlayerStatus(snapshot.getPlayerCount(), snapshot.maxPlayers);
                             });
-                        }, lobby::showNetworkError);
+                        }, lobby::showNetworkError,
+                        remainingSeconds -> {
+                            SwingUtilities.invokeLater(() -> lobby.getLobbyController().startCountdown(remainingSeconds));
+                        });
                 if (!connected) {
                     JOptionPane.showMessageDialog(this, "Cannot join the lobby. It may be full.",
                             "Connection error", JOptionPane.ERROR_MESSAGE);
