@@ -11,13 +11,13 @@ public class MainMenuUI extends JFrame {
     private JTextField txtIP;
     private int maxPlayers = 3;
 
-    private final int dotX = 341;
-    private final int dotY3 = 296;
-    private final int dotY4 = 327;
+    private final int dotX = 515;
+    private final int dotY3 = 348;
+    private final int dotY4 = 384;
 
     public MainMenuUI() {
         setTitle("Tank Boommm - Main Menu");
-        setSize(800, 600);
+        setSize(1200, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
@@ -26,16 +26,16 @@ public class MainMenuUI extends JFrame {
         mainPanel.setLayout(null);
 
         txtName = new JTextField("Player_1");
-        txtName.setBounds(345, 188, 280, 26);
+        txtName.setBounds(520, 223, 200, 30);
         styleTextField(txtName);
 
         txtIP = new JTextField(getMyLocalIP());
-        txtIP.setBounds(345, 237, 280, 26);
+        txtIP.setBounds(520, 280, 200, 30);
         styleTextField(txtIP);
 
         // --- ปุ่ม HOST GAME ---
-        JButton btnHost = new JButton(loadIcon("image/host_btn.png", 360, 180));
-        btnHost.setBounds(60, 380, 360, 180);
+        JButton btnHost = new JButton(loadIcon("image/host_btn.png", 460, 250));
+        btnHost.setBounds(230, 490, 346, 86);
         styleButton(btnHost);
         btnHost.addActionListener(e -> {
             String playerName = txtName.getText().trim();
@@ -63,8 +63,8 @@ public class MainMenuUI extends JFrame {
         });
 
         // --- ปุ่ม JOIN GAME ---
-        JButton btnJoin = new JButton(loadIcon("image/join_btn.png", 360, 180));
-        btnJoin.setBounds(370, 380, 360, 180);
+        JButton btnJoin = new JButton(loadIcon("image/join_btn.png",460, 250));
+        btnJoin.setBounds(625, 490, 346, 86);
         styleButton(btnJoin);
         btnJoin.addActionListener(e -> {
             String targetIP = txtIP.getText().trim();
@@ -104,10 +104,10 @@ public class MainMenuUI extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int mx = e.getX(), my = e.getY();
-                if (Math.abs(mx - dotX) < 28 && Math.abs(my - dotY3) < 28) {
+                if (Math.abs(mx - dotX) < 35 && Math.abs(my - dotY3) < 25) {
                     maxPlayers = 3;
                     mainPanel.repaint();
-                } else if (Math.abs(mx - dotX) < 28 && Math.abs(my - dotY4) < 28) {
+                } else if (Math.abs(mx - dotX) < 35 && Math.abs(my - dotY4) < 25) {
                     maxPlayers = 4;
                     mainPanel.repaint();
                 }
@@ -130,7 +130,7 @@ public class MainMenuUI extends JFrame {
     }
 
     private void styleTextField(JTextField tf) {
-        tf.setFont(new Font("Monospaced", Font.BOLD, 16));
+        tf.setFont(new Font("Monospaced", Font.BOLD, 20));
         tf.setForeground(new Color(255, 220, 100));
         tf.setCaretColor(Color.YELLOW);
         tf.setOpaque(false);
@@ -167,9 +167,9 @@ public class MainMenuUI extends JFrame {
 
             g.setColor(new Color(45, 40, 30));
             if (maxPlayers == 3) {
-                g.fillOval(dotX - 13, dotY3 - 13, 26, 26);
+                g.fillOval(dotX - 17, dotY3 - 12, 34, 24);
             } else if (maxPlayers == 4) {
-                g.fillOval(dotX - 13, dotY4 - 13, 26, 26);
+                g.fillOval(dotX - 17, dotY4 - 12, 34, 24);
             }
         }
     }
